@@ -2,14 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { socket } from '../socket';
 
 const AVATAR_COLORS = [
-  '#5865f2', '#eb459e', '#fee75c', '#57f287', '#ed4245',
-  '#ffa500', '#1abc9c', '#9b59b6',
+  '#5865f2', '#eb459e', '#57f287', '#ed4245', '#ffa500',
 ];
 
 function getColor(name) {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+  const index = name.length % AVATAR_COLORS.length;
+  return AVATAR_COLORS[index];
 }
 
 function formatTime(date) {
@@ -19,20 +17,23 @@ function formatTime(date) {
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const bottomRef = useRef(null);
+  const seenIds = useRef(new Set());
 
   useEffect(() => {
-    // El servidor emite (msg, serverOffset)
     function onChatMessage(msg, serverOffset) {
-      setMessages(prev => {
-        // Evita duplicados por el serverOffset
-        if (serverOffset && prev.find(m => m.id === serverOffset)) return prev;
-        return [...prev, {
-          id: serverOffset || Date.now() + Math.random(),
-          text: typeof msg === 'string' ? msg : JSON.stringify(msg),
-          author: 'Usuario',
-          timestamp: new Date(),
-        }];
-      });
+      if (serverOffset && seenIds.current.has(serverOffset)) return;
+      if (serverOffset) seenIds.current.add(serverOffset);
+
+      if (serverOffset) {
+        socket.auth.serverOffset = serverOffset;
+      }
+
+      setMessages(prev => [...prev, {
+        id: serverOffset || Date.now() + Math.random(),
+        text: typeof msg === 'string' ? msg : JSON.stringify(msg),
+        author: 'Usuario',
+        timestamp: new Date(),
+      }]);
     }
 
     socket.on('chat message', onChatMessage);
