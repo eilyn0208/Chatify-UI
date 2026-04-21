@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import './App.css';
-import { socket } from '../socket';
+import { socket } from './socket';
 
-// Importación de componentes según la imagen
+
 import ManageConnection from './components/ManageConnection';
 import MyForm from './components/MyForm';
 import Channels from './components/Channels';
@@ -34,7 +34,7 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* Estructura basada en tu imagen de VS Code */}
+      
       <h1>Chatify</h1>
       
       <ManageConnection />
@@ -45,9 +45,6 @@ function App() {
       
       <MyForm />
       
-      {/* Opcional: Si quieres mantener el punto de estado 
-         que tenías en tu versión anterior 
-      */}
       <div style={{ marginTop: '20px' }}>
         <small>Estado: </small>
         <span className={`status-dot ${isConnected ? 'online' : 'offline'}`}>
