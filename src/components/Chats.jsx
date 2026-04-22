@@ -5,6 +5,9 @@ const AVATAR_COLORS = [
   '#5865f2', '#eb459e', '#57f287', '#ed4245', '#ffa500',
 ];
 
+// ← Fuera del componente, no se reinicia
+const seenIds = new Set();
+
 function getColor(name) {
   const index = name.length % AVATAR_COLORS.length;
   return AVATAR_COLORS[index];
@@ -17,12 +20,12 @@ function formatTime(date) {
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const bottomRef = useRef(null);
-  const seenIds = useRef(new Set());
 
   useEffect(() => {
     function onChatMessage(msg, serverOffset) {
-      if (serverOffset && seenIds.current.has(serverOffset)) return;
-      if (serverOffset) seenIds.current.add(serverOffset);
+      // Si ya vimos este ID, ignorar completamente
+      if (serverOffset && seenIds.has(serverOffset)) return;
+      if (serverOffset) seenIds.add(serverOffset);
 
       if (serverOffset) {
         socket.auth.serverOffset = serverOffset;
@@ -36,7 +39,10 @@ const Chat = () => {
       }]);
     }
 
+    // Asegura que no haya listeners duplicados
+    socket.off('chat message', onChatMessage);
     socket.on('chat message', onChatMessage);
+
     return () => { socket.off('chat message', onChatMessage); };
   }, []);
 
