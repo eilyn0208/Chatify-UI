@@ -9,13 +9,16 @@ const MyForm = () => {
     setMessage(e.target.value);
   };
 
-  const handleOnClick = (e) => {
-    e.preventDefault();
-    if (!message.trim()) return;
-    socket.emit('chat message', message);
-    setMessage('');
-    inputRef.current?.focus();
-  };
+const handleOnClick = (e) => {
+  e.preventDefault();
+  if (!message.trim()) return;
+
+  const clientOffset = `${socket.id}-${Date.now()}`; // único por mensaje
+  socket.emit('chat message', message, clientOffset);
+  
+  setMessage('');
+  inputRef.current?.focus();
+};
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
